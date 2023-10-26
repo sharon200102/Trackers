@@ -1,5 +1,4 @@
 tracker_params:
-  embedder: 'clip_RN50'
   max_age: 10
   n_init: 15
   gating_only_position: True
