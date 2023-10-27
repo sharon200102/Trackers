@@ -4,6 +4,7 @@ import pandas as pd
 import cv2
 from pybboxes import BoundingBox
 import pybboxes as pbx
+import logging
 # The following class is a data-class that defines the structure of the ouput of the VMD for each video seperatley.
 @dataclass
 class Detections:
@@ -99,10 +100,18 @@ class TrackingSummarizer:
     for track in tracks:
       if not track.is_confirmed():
           continue
-      
+
+      # The Kalman filter estimation can return negative values for each one of x,y,w,h, if don't include the detection in the reporter
+      track_bbox = track.to_ltwh(orig=True,orig_strict=False)
+
+      if (track_bbox < 0).any():
+        logging.debug(f'Track number {track.track_id} had corrupted estimation {track_bbox} therefore is discarded ')
+        continue
+
       track_record_in_current_frame = {self.ids_save_name:track.track_id,self.frame_num_save_name:self._frame_count}
-      bbox = pbx.convert_bbox(track.to_ltwh(orig=True,orig_strict=False), from_type="coco", to_type=self.bbox_save_format)
-      track_record_in_current_frame.update({bbox_field:bbox_field_value for bbox_field, bbox_field_value in zip(self.bbox_save_names,bbox)})
+      # convert the current track bbox to the desired format
+      track_bbox = pbx.convert_bbox(track_bbox, from_type="coco", to_type=self.bbox_save_format)
+      track_record_in_current_frame.update({bbox_field:bbox_field_value for bbox_field, bbox_field_value in zip(self.bbox_save_names,track_bbox)})
       
       if self.cls_save_name is not None:
         track_record_in_current_frame[self.cls_save_name] = track.get_det_class() 
