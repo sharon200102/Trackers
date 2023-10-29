@@ -96,7 +96,8 @@ class TrackingSummarizer:
     self.confidence_save_name = confidence_save_name
 
   def update(self,tracks):
-
+    # return the current frame tracks as a dataframe and also aggregates them into the whole video tracks. 
+    tracks_records_in_current_frame = []
     for track in tracks:
       if not track.is_confirmed():
           continue
@@ -119,8 +120,10 @@ class TrackingSummarizer:
       if self.confidence_save_name is not None:
         track_record_in_current_frame[self.confidence_save_name] = track.get_det_conf()
 
-      self.tracking_summary.append(track_record_in_current_frame)      
+      self.tracking_summary.append(track_record_in_current_frame)
+      tracks_records_in_current_frame.append(track_record_in_current_frame)      
     self._frame_count+=1
+    return pd.DataFrame.from_dict(tracks_records_in_current_frame)
   
   def to_dataframe(self):
     return pd.DataFrame.from_dict(self.tracking_summary)
