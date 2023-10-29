@@ -102,10 +102,10 @@ class TrackingSummarizer:
       if not track.is_confirmed():
           continue
 
-      # The Kalman filter estimation can return negative values for each one of x,y,w,h, if don't include the detection in the reporter
+      # The Kalman filter estimation can return negative values for each one of x,y,w,h, if so don't include the detection in the reporter
       track_bbox = track.to_ltwh(orig=True,orig_strict=False)
-
-      if (track_bbox < 0).any():
+      # pbx.convert_bbox rounds the bboxes to intergers hence even values smaller then 1 will fail
+      if (track_bbox < 1).any():
         logging.debug(f'Track number {track.track_id} had corrupted estimation {track_bbox} therefore is discarded ')
         continue
 
