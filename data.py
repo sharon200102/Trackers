@@ -92,7 +92,7 @@ class ExtractBboxFromTracks():
     self.confidence_save_name = confidence_save_name
     self.frame_num_save_name = frame_num_save_name
 
-  def extract_from_deep_sort_format(self,tracks,frame_num=None):
+  def extract_from_deep_sort_format(self,tracks,frame_num=None,image_size=None):
     tracks_records_in_current_frame = []
     for track in tracks:
       if not track.is_confirmed():
@@ -107,7 +107,7 @@ class ExtractBboxFromTracks():
 
       track_record_in_current_frame = {self.ids_save_name:track.track_id}
       # convert the current track bbox to the desired format
-      track_bbox = pbx.convert_bbox(track_bbox, from_type="coco", to_type=self.bbox_save_format)
+      track_bbox = pbx.convert_bbox(track_bbox, from_type="coco", to_type=self.bbox_save_format,image_size=image_size)
       track_record_in_current_frame.update({bbox_field:bbox_field_value for bbox_field, bbox_field_value in zip(self.bbox_save_names,track_bbox)})
       
       if self.cls_save_name is not None:

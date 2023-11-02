@@ -53,7 +53,7 @@ for frame_num,(frame,detections) in enumerate(sample):
     if args.frame_limit is not None and frame_num > args.frame_limit:
         break
     tracks = tracker.update_tracks([d.to_deepsort_format(lambda metadata: metadata[[confidence_col_name,class_col_name]]) for d in detections], frame=frame)
-    frame_tracked_bboxes = bboxes_extractor.extract_from_deep_sort_format(tracks,frame_num)
+    frame_tracked_bboxes = bboxes_extractor.extract_from_deep_sort_format(tracks,frame_num,frame.shape[::-1][1:]) # Transform h,w,c to w,h
     if len(frame_tracked_bboxes)>0:
         aggregated_tracks.append(frame_tracked_bboxes)
     logging.debug(f'Finished processing frame number {frame_num}')
