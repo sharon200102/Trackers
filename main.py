@@ -1,10 +1,11 @@
 from argparse import ArgumentParser
 import pandas as pd
 import cv2 as cv
-from data import Sample,Detections,TrackingSummarizer
+from data import Sample,Detections,ExtractBboxFromTracks
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from pathlib import Path
-from utils import load_yaml,draw_video_from_bool_csv
+from SoiUtils.load import load_yaml
+from SoiUtils.video_manipulations import draw_video_from_bool_csv
 import logging
 parser = ArgumentParser()
 parser.add_argument('--video_path',type=str)
@@ -45,14 +46,16 @@ config_params = load_yaml(args.config_path)
 
 # info upon the tracker can be found here https://github.com/levan92/deep_sort_realtime
 tracker = DeepSort(**config_params.get('tracker_params',{}))
-tracker_summary = TrackingSummarizer(args.ids_col_name,args.bbox_format,args.bbox_col_names,args.frame_col_name
+bboxes_extractor = ExtractBboxFromTracks(args.ids_col_name,args.bbox_format,args.bbox_col_names,args.frame_col_name
 ,args.class_col_name,args.confidence_col_name)
-
+aggregated_tracks = []
 for frame_num,(frame,detections) in enumerate(sample):
     if args.frame_limit is not None and frame_num > args.frame_limit:
         break
     tracks = tracker.update_tracks([d.to_deepsort_format(lambda metadata: metadata[[confidence_col_name,class_col_name]]) for d in detections], frame=frame)
-    tracker_summary.update(tracks)
+    frame_tracked_bboxes = bboxes_extractor.extract_from_deep_sort_format(tracks,frame_num)
+    if len(frame_tracked_bboxes)>0:
+        aggregated_tracks.append(frame_tracked_bboxes)
     logging.debug(f'Finished processing frame number {frame_num}')
 
 cap.release()
@@ -60,7 +63,7 @@ cap.release()
 
 # Render the tracks upon the video using a unique color for each track.
 # This should become a function.
-tracks_df = tracker_summary.to_dataframe()
+tracks_df = pd.concat(aggregated_tracks)
 
 if args.rendered_video_save_path is not None:
     cap = cv.VideoCapture(str(args.video_path))
