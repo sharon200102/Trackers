@@ -1,0 +1,6 @@
+tracker_params:
+  max_age: 10
+  n_init: 5
+  gating_only_position: True
+  max_iou_distance: 0.9
+   
