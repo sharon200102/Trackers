@@ -82,6 +82,16 @@ class Detection:
 
     return [self.detection.to_coco().raw_values,*(metadata_extraction_fn(self.metadata))]
 
+def get_track_bbox(track, time_interval):
+  if time_interval == 0:
+    return track.to_ltwh(orig=True, orig_strict=False)
+  
+  else:
+    x, y, a, h, vx, vy, va, vh = track.mean
+    positions = [x, y, a, h]
+    velocities = [vx, vy, va, vh]
+
+    return [pos + velocity * time_interval for pos, velocity in zip(positions, velocities)]
 
 class ExtractBboxFromTracks():
   def __init__(self,ids_save_name = 'ids',bbox_save_format='coco',bbox_save_names = None,frame_num_save_name=None,cls_save_name=None,confidence_save_name=None):
@@ -92,14 +102,14 @@ class ExtractBboxFromTracks():
     self.confidence_save_name = confidence_save_name
     self.frame_num_save_name = frame_num_save_name
 
-  def extract_from_deep_sort_format(self,tracks,frame_num=None,image_size=None):
+  def extract_from_deep_sort_format(self, tracks, frame_num=None, image_size=None, time_interval=0):
     tracks_records_in_current_frame = []
     for track in tracks:
       if not track.is_confirmed():
           continue
 
       # The Kalman filter estimation can return negative values for each one of x,y,w,h, if so don't include the detection in the reporter
-      track_bbox = track.to_ltwh(orig=True,orig_strict=False)
+      track_bbox = get_track_bbox(track, time_interval)
       # pbx.convert_bbox rounds the bboxes to intergers hence even values smaller then 1 will fail
       if (track_bbox < 1).any():
         logging.debug(f'Track number {track.track_id} had corrupted estimation {track_bbox} therefore is discarded ')
