@@ -92,7 +92,7 @@ def get_track_bbox(track, time_interval=0):
     velocities = [vx, vy, va, vh]
 
     # this computaion is like in https://github.com/levan92/deep_sort_realtime/blob/2ef83776ded402fba226d8054657cf7338ce05fd/deep_sort_realtime/deep_sort/track.py#L150
-    ret = [pos + velocity * time_interval for pos, velocity in zip(positions, velocities)]
+    ret = np.array([pos + velocity * time_interval for pos, velocity in zip(positions, velocities)])
     ret[2] *= ret[3]
     ret[:2] -= ret[2:] / 2
     return ret
