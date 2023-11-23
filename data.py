@@ -88,7 +88,7 @@ def get_track_bbox(track, time_interval=0):
   
   else:
     x, y, a, h, vx, vy, va, vh = track.mean
-    ret = np.array([x + vx * time_interval, y + vy * time_interval, a, h])
+    ret = np.array([x + (vx * time_interval), y + (vy * time_interval), a, h])
     ret[2] *= ret[3]
     ret[:2] -= ret[2:] / 2
     return ret
