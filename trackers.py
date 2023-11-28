@@ -13,7 +13,7 @@ class ExtendedDeepSort(DeepSort,Resetable,Updatable):
         self.tracker.max_iou_distance = max_iou_distance
         self.tracker.max_age = max_age
         self.tracker.n_init = n_init
-        self.gating_only_position.n_init = gating_only_position
+        self.tracker.gating_only_position = gating_only_position
         
 
 
