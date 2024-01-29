@@ -14,10 +14,6 @@ class ExtendedDeepSort(DeepSort,Resetable,Updatable,Tracker):
         self.tracker.n_init = n_init
         self.tracker.gating_only_position = gating_only_position
         
-
-
-        
-
     def reset(self):
         self.delete_all_tracks()
     
