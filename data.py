@@ -112,12 +112,18 @@ class ExtractBboxFromTracks():
       track_bbox = get_track_bbox(track, time_interval)
       # pbx.convert_bbox rounds the bboxes to intergers hence even values smaller then 1 will fail
       if (track_bbox < 1).any():
-        logging.debug(f'Track number {track.track_id} had corrupted estimation {track_bbox} therefore is discarded ')
+        logging.debug(f'Track number {track.track_id} had corrupted estimation {track_bbox} therefore is discarded')
+        continue
+
+      try:
+        # convert the current track bbox to the desired format
+        track_bbox = pbx.convert_bbox(track_bbox, from_type="coco", to_type=self.bbox_save_format,image_size=image_size, strict=True)
+      except ValueError:
+        logging.debug(
+          f'Track number {track.track_id} had estimated that an object with bbox {track_bbox} is outside the image, therefore it is discarded')
         continue
 
       track_record_in_current_frame = {self.ids_save_name:track.track_id}
-      # convert the current track bbox to the desired format
-      track_bbox = pbx.convert_bbox(track_bbox, from_type="coco", to_type=self.bbox_save_format,image_size=image_size)
       track_record_in_current_frame.update({bbox_field:bbox_field_value for bbox_field, bbox_field_value in zip(self.bbox_save_names,track_bbox)})
       
       if self.cls_save_name is not None:
